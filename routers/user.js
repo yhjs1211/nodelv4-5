@@ -1,13 +1,13 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
-const User = require('../schemas/user.js');
+const User = require('../models/user.js');
 const config = require('../config.js');
 
 router.post('/signup',async (req, res, next) => {
     const {name,nickname,password,confirm} = req.body;
     const nicknameReg = /^[\w]{3,}$/;
-    const passwordReg = /^[\w]{4,}$/;
+    const passwordReg = /^[\w!@#$%^*+=-]{4,}$/;
     // 1. 입력 유효값 확인
     if(nicknameReg.test(nickname) && passwordReg.test(password)){
         // 2. 패스워드 & 닉네임 중복값
@@ -22,18 +22,14 @@ router.post('/signup',async (req, res, next) => {
                 let reg = /^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,15}$/; // 문자,숫자,특수기호 조합으로 8-15
                 if(reg.test(password)){
                     try {
-                        const data = await User.find({nickname:nickname});
-                        if(data.length==0){
+                        const foundData = await User.findOne({where:{nickname}});
+                        if(foundData==null){
                             const created = await User.create({
                                 name,
                                 nickname,
                                 password
-                            });
-
-                            res.status(201).json({
-                                "message":"회원가입 되셨습니다.",
-                                "data":created.readOnlyData
-                            });
+                            }).then(d=>{return d});
+                            res.status(201).json(created.toJSON());
                             res.end();
                         }else{
                             res.status(412).json({
@@ -43,7 +39,7 @@ router.post('/signup',async (req, res, next) => {
                     } catch (e) {
                         console.log("Error => "+e);
                         res.status(400).json({
-                            "errorMessage": "중복된 닉네임입니다."
+                            "errorMessage": "가입 실패했습니다."
                         });
                     }
                 }else{
@@ -69,12 +65,12 @@ router.post('/signup',async (req, res, next) => {
 router.post('/login',async (req, res, next) => {
     const {nickname, password} = req.body;
     try {
-        const data = await User.find({nickname:nickname, password:password});
-        
-        if(data.length!=0){
+        const data = await User.findOne({where:{nickname,password}});
+
+        if(data!=null){
             // Token
             const token = await jwt.sign({
-                id:data[0]._id.toHexString()}
+                id:data.dataValues.id}
                 , config.jwt.secret 
                 ,{expiresIn:config.jwt.expiresInDay}
             );

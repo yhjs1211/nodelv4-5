@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../schemas/user.js');
+const User = require('../models/user.js');
 const config = require('../config.js');
 
 const isAuth = async (req, res, next) => {
@@ -20,10 +20,10 @@ const isAuth = async (req, res, next) => {
         }
 
         const userId = payload.id;
-        const foundUser = await User.findById(userId);
+        const foundUser = await User.findByPk(userId);
 
         if(foundUser){
-            res.locals.user = foundUser.readOnlyData;
+            res.locals.user = foundUser.dataValues;
             next();
         }else{
             res.status(403).json({

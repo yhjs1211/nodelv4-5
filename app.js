@@ -1,14 +1,24 @@
 // Router 연결
 const router = require('./routers/index.js');
 
-// DB import
-const dbConnect = require('./mongodb.js');
-dbConnect();
+/* 
+DB import
+1. DB mongo
+2. DB MYSQL
+*/
+const mongo = require('./database/dbMongo.js'); // 1
+const mysql = require('./database/dbMysql.js'); // 2
+
+dbConnect('mysql');
+
+//Models
+const models = require('./models/index.js');
 
 // Server
 const express = require('express');
 const config = require('./config.js');
 const cookie = require('cookie-parser');
+
 const app = express();
 
 // req Data json 변환
@@ -22,22 +32,30 @@ app.get('/',(_,res)=>{
         2:"POST /posts",
         3:"PUT /posts:_postId",
         4:"DELETE /posts:_postId",
-        5:"GET /comments?id=postId",
-        6:"POST /comments?id=postId",
-        7:"PUT /comments?id=commentId",
-        8:"DELETE /comments?id=commentId",
-        9:"POST /singup",
-        10:"POST /login",
-        11:"GET /logout"
+        5:"POST /singup",
+        6:"POST /login",
+        7:"GET /logout"
     });
     res.end();
 })
 
 app.use('/',router);
 
-
-app.listen(config.host.port,()=>{
-    console.log(`8081 is running...`);
-})
-
-
+async function dbConnect(dbType){
+    if(dbType=='mongo'){
+        await mongo().then(()=>{
+            app.listen(config.host.port,()=>{
+                console.log(`8081 is running...`);
+            });
+        });
+    }else if(dbType=='mysql'){
+        try {
+            await mysql.sync();   
+            app.listen(config.host.port,()=>{
+                console.log(`8081 is running...`);
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+}

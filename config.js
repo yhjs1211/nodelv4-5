@@ -19,6 +19,12 @@ const config ={
     host:{
         port: parseInt(configValue('HOST_PORT',8081)),
     },
+    db:{
+        host:configValue('HOST','express-database.cjx2t84z9jyl.ap-northeast-2.rds.amazonaws.com'),
+        username:configValue('USERNAME','root'),
+        database:configValue('DATABASE','node_db'),
+        password:configValue('PASSWORD','20211211')
+    }
 };
 
 module.exports=config;

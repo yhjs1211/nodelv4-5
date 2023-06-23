@@ -2,17 +2,13 @@
 const router = require('./routers/index.js');
 
 /* 
-DB import
-1. DB mongo
-2. DB MYSQL
+DB MYSQL
 */
-const mongo = require('./database/dbMongo.js'); // 1
-const mysql = require('./database/dbMysql.js'); // 2
 
-dbConnect('mysql');
+const mysql = require('./database/dbMysql.js');
 
 //Models
-const models = require('./models/index.js');
+const models = require('./database/models/index.js');
 
 // Server
 const express = require('express');
@@ -41,21 +37,13 @@ app.get('/',(_,res)=>{
 
 app.use('/',router);
 
-async function dbConnect(dbType){
-    if(dbType=='mongo'){
-        await mongo().then(()=>{
-            app.listen(config.host.port,()=>{
-                console.log(`8081 is running...`);
-            });
+(async ()=>{
+    try {
+        await mysql.sync();   
+        app.listen(config.host.port,()=>{
+            console.log(`8081 is running...`);
         });
-    }else if(dbType=='mysql'){
-        try {
-            await mysql.sync();   
-            app.listen(config.host.port,()=>{
-                console.log(`8081 is running...`);
-            });
-        } catch (e) {
-            console.error(e);
-        }
+    } catch (e) {
+        console.error(e);
     }
-}
+})();

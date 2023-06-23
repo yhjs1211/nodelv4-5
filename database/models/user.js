@@ -1,6 +1,6 @@
 const Sq = require('sequelize');
 const DataTypes = Sq.DataTypes;
-const mysql = require("../database/dbMysql");
+const mysql = require("../dbMysql");
 
 const User = mysql.define('user',{
     id:{

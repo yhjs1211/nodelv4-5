@@ -39,10 +39,11 @@ app.use('/',router);
 
 (async ()=>{
     try {
-        await mysql.sync();   
-        app.listen(config.host.port,()=>{
-            console.log(`8081 is running...`);
-        });
+        await mysql.sync().then(()=>{
+            app.listen(config.host.port,()=>{
+                console.log(`8081 is running...`);
+            });
+        });   
     } catch (e) {
         console.error(e);
     }

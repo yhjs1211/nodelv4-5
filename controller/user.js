@@ -33,33 +33,21 @@ class UserController{
         }
     }
     logout (req, res, next){
-        res.clearCookie('Authorization');
+        res.clearCookie('accessToken');
+        res.clearCookie('refreshToken');
         res.redirect('/');
     }
     update = async (req, res, next) =>{
+        const user = res.locals.foundUser;
+        const result = await this.userService.updateUser(req.body,user);
 
-        const cookies ={
-            accessToken:req.cookies.accessToken,
-            refreshToken:req.cookies.refreshToken
-        }
-
-        const message = await this.userService.updateUser(req.body,cookies);
-
-        if(message.result){
-            if(message.accessToken){
-                res.cookie('accessToken',message.accessToken);
-                
-                return res.status(200).json({
-                    message:"업데이트 성공!",
-                    accessToken:message.accessToken
-                });
-            }
+        if(result){
             res.status(200).json({
                 message:"업데이트 성공!"
             });
         }else{
             res.status(400).json({
-                message:message.errorMessage
+                message:"업데이트 실패!"
             });
         }
     }

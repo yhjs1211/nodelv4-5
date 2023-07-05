@@ -48,38 +48,26 @@ class UserService{
             return {result:false};
         }
     }
-    updateUser = async (datas,cookies) => {
+    updateUser = async (datas,user) => {
         const { nickname,password } = datas;
-        const {isSuccessful, isRefreshed, accessToken, errorMessage, user} = this.auth.verify(cookies);
-        if(isSuccessful){
-            let payload;
-            if(!nickname && !password){
-                res.status(400).json({
-                    message:"업데이트 할 내용을 적어주세요."
-                });
-            }else if(!nickname && password){
-                payload = {password};
-            }else if(nickname && !password){
-                payload = {nickname};
-            }else{
-                payload = {
-                    nickname,
-                    password
-                };
-            };
 
-            const updated = await this.repository.update(payload,user.id);
-            if(isRefreshed){
-                return {
-                    accessToken,
-                    isRefreshed,
-                    result : true
-                }
-            }
-            return { isRefreshed, result : true };
+        let payload;
+        if(!nickname && !password){
+            res.status(400).json({
+                message:"업데이트 할 내용을 적어주세요."
+            });
+        }else if(!nickname && password){
+            payload = {password};
+        }else if(nickname && !password){
+            payload = {nickname};
         }else{
-            return { result : false , errorMessage};
-        }
+            payload = {
+                nickname,
+                password
+            };
+        };
+
+        return await this.repository.update(payload,user.id);
     }
     deleteUser = async (req, res, next) => {
         const id = res.locals.user.id;

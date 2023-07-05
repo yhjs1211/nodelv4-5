@@ -13,8 +13,10 @@ function configValue(key, defalutValue=undefined){
 
 const config ={
     jwt:{
-        secret:configValue('JWT_SECRET','gMhHLk&9dzpv$4#rP!3NdAr00gTq3$SS'),
-        expiresInDay:configValue('JWT_EXPIRE_DAY','1d')
+        secretAccess : configValue('JWT_ACCESS_SECRET','gMhHLk&9dzpv$4#rP!3NdAr00gTq3$SS'),
+        secretRefresh : configValue('JWT_REFRESH_SECRET','7zXsKeU2n*ioKTQmXMtQFE6f$QP*cQ!M'),
+        expiresInAccess : configValue('JWT_EXPIRE_ACCESS','30m'),
+        expiresInRefresh : configValue('JWT_EXPIRE_REFRESH','7d')
     },
     host:{
         port: parseInt(configValue('HOST_PORT',8081)),

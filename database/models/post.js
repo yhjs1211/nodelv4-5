@@ -1,7 +1,6 @@
 const Sq = require('sequelize');
 const DataTypes = Sq.DataTypes;
 const mysql = require("../dbMysql");
-const User = require('./user.js');
 
 const Post = mysql.define('post',{
     id:{
@@ -21,10 +20,12 @@ const Post = mysql.define('post',{
     },
     content:{
         type:DataTypes.TEXT
-    }
+    },
+    likewho:{
+        type:DataTypes.TEXT({length:"long"})
+    },
 });
 
-Post.belongsTo(User);
 
 
 module.exports=Post;

@@ -1,6 +1,8 @@
 const Sq = require('sequelize');
 const DataTypes = Sq.DataTypes;
 const mysql = require("../dbMysql");
+const Post = require('./post.js');
+const Comment = require('./comment.js');
 
 const User = mysql.define('user',{
     id:{
@@ -23,7 +25,13 @@ const User = mysql.define('user',{
         type: DataTypes.STRING,
         allowNull:false
     },
+    token : {
+        type: DataTypes.STRING,
+        allowNull:true 
+    }
 });
 
+User.hasMany(Post);
+User.hasMany(Comment);
 
 module.exports=User;

@@ -1,13 +1,9 @@
 const UserRepository = require('../repositories/user.js');
-const Auth = require('../middleware/auth.js');
-
-const jwt = require('jsonwebtoken');
-const config = require('../config.js');
+const auth = require('../middleware/auth.js');
 
 class UserService{
     constructor(){
         this.repository = new UserRepository();
-        this.auth = new Auth();
     }
     verifyUser = async (payload) => {
         const { nickname, password } = payload;
@@ -15,8 +11,8 @@ class UserService{
         const user = await this.repository.findByNickname(nickname);
 
         if(user && user.password == password){
-            const accessToken = await this.auth.getAccessToken(user.id);
-            const refreshToken = await this.auth.getRefreshToken(user.id);
+            const accessToken = await auth.getAccessToken(user.id);
+            const refreshToken = await auth.getRefreshToken(user.id);
 
             await user.update({token:refreshToken});
 
@@ -72,13 +68,18 @@ class UserService{
                 };
             };
 
-            
+            const updated = await this.repository.update(payload,user.id);
+            if(isRefreshed){
+                return {
+                    accessToken,
+                    isRefreshed,
+                    result : true
+                }
+            }
+            return { isRefreshed, result : true };
         }else{
-            return { result : false };
+            return { result : false , errorMessage};
         }
-
-        const updated = await this.repository.update(payload,user.id);
-        return { updated : true };
     }
     deleteUser = async (req, res, next) => {
         const id = res.locals.user.id;

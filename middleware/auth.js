@@ -2,99 +2,83 @@ const jwt = require('jsonwebtoken');
 const User = require('../database/models/user.js');
 const config = require('../config.js');
 
-class Auth{
-    getAccessToken = async (userId) => {
-        const token = 'Bearer ' + jwt.sign(
-            {userId},
-            config.jwt.secretAccess,
-            {
-                expiresIn:config.jwt.expiresInAccess
-            }
-        );
+const auth = {};
+    
+auth.getAccessToken = async (userId) => {
+    const token = 'Bearer ' + jwt.sign({userId},config.jwt.secretAccess,{expiresIn:config.jwt.expiresInAccess});
+    return token;
+};
+auth.getRefreshToken = async (userId) => {
+        const token = 'Bearer ' + jwt.sign({userId},config.jwt.secretRefresh,{expiresIn:config.jwt.expiresInRefresh});
         return token;
-    }
-    getRefreshToken = async (userId) => {
-        const token = 'Bearer ' + jwt.sign(
-            {userId},
-            config.jwt.secretRefresh,
-            {
-                expiresIn:config.jwt.expiresInRefresh
-            }
-        );
-        return token;
-    }
-    verify = async (cookies) => {
-        const accessToken = cookies.accessToken;
-        const refreshToken = cookies.refreshToken;
+};
+auth.verify = async (req, res, next) => {
+        const accessToken = req.cookies.accessToken;
+        const refreshToken = req.cookies.refreshToken;
 
-        let token;
         if(accessToken){
-            token = accessToken.split(' ')[1];
-    
-            let payloadAccess = await jwt.verify(token,config.jwt.secretAccess,(err,decoded)=>{
-                    if(err){
-                        return false;
-                    }else{
-                        return decoded;
-                    }
-                });
+            let token = accessToken.split(' ')[1];
 
-            if(payloadAccess){
-                const userId = payloadAccess.userId;
-                const foundUser = await User.findByPk(userId);
-    
-                if(foundUser){
-                    return {
-                        user : foundUser.dataValues,
-                        isRefreshed : false,
-                        isSuccessful : true
-                    };
+            let payloadAccessToken = await jwt.verify(token,config.jwt.secretAccess,(err,decoded)=>{
+                if(err){
+                    return false;
                 }else{
-                    return {
-                        isRefreshed : false,
-                        isSuccessful : false,
-                        errorMessage : "존재하지 않는 회원입니다."
-                    };
+                    return decoded;
+                }
+            });
+
+            if(payloadAccessToken){
+                const userId = payloadAccessToken.userId;
+                const user = await User.findByPk(userId);
+                if(user){
+                    res.locals.foundUser = user.dataValues;
+                    next();
+                }else{
+                    res.status(404).json({
+                        message:"회원이 존재하지 않습니다."
+                    });
                 }
             }else{
-                let payloadRefresh;
                 token = refreshToken.split(' ')[1];
 
-                payloadRefresh = await jwt.verify(token,config.jwt.secretRefresh,(err,decoded)=>{
+                let payloadRefreshToken = await jwt.verify(token,config.jwt.secretRefresh,(err,decoded)=>{
                     if(err){
                         return false;
                     }else{
                         return decoded;
                     }
                 });
-
-                const userId = payloadRefresh.userId;
-                const foundUser = await User.findByPk(userId);
-    
-                if(foundUser.dataValues.token==refreshToken){
-                    // 새로운 accessToken 발급
-                    accessToken = this.getAccessToken(foundUser.dataValues.id);
-    
-                    return {
-                        user : foundUser.dataValues,
-                        isRefreshed : true,
-                        isSuccessful : true,
-                        accessToken
-                    };
+                if(payloadRefreshToken){
+                    const userId = payloadRefreshToken.userId;
+                    const user = await User.findByPk(userId);
+                    if(user && user.dataValues.token==refreshToken){
+                        const newAccessToken = await auth.getAccessToken(user.dataValues.id);
+                        
+                        res.cookie('accessToken',newAccessToken);
+                        res.locals.foundUser = user;
+                        next();
+                    }else{
+                        if(!user){
+                            return res.status(404).json({
+                                message:"회원이 존재하지 않습니다."
+                            });
+                        }
+                        res.status(400).json({
+                            message:"토큰을 확인해주세요."
+                        });
+                    }
+                    
                 }else{
-                    return {
-                        isSuccessful : false,
-                        errorMessage : "다시 로그인해주세요."
-                    };
+                    res.status(400).json({
+                        message:"토큰이 만료되었습니다."
+                    });
                 }
             }
         }else{
-            return {
-                isSuccessful : false,
-                errorMessage : "로그인이 필요한 기능입니다."
-            };
+            res.status(400).json({
+                errorMessage: "로그인이 필요한 기능입니다."
+            });
         }
-    }
-}
+};
 
-module.exports=Auth;
+module.exports=auth;

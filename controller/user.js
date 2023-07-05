@@ -42,16 +42,24 @@ class UserController{
             accessToken:req.cookies.accessToken,
             refreshToken:req.cookies.refreshToken
         }
-        
-        const result = await this.userService.updateUser(req.body,cookies);
 
-        if(result){
+        const message = await this.userService.updateUser(req.body,cookies);
+
+        if(message.result){
+            if(message.accessToken){
+                res.cookie('accessToken',message.accessToken);
+                
+                return res.status(200).json({
+                    message:"업데이트 성공!",
+                    accessToken:message.accessToken
+                });
+            }
             res.status(200).json({
                 message:"업데이트 성공!"
             });
         }else{
             res.status(400).json({
-                message:"업데이트 실패!"
+                message:message.errorMessage
             });
         }
     }

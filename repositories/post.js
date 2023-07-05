@@ -6,15 +6,22 @@ class PostRepository{
         return created;
     }
     findById = async(id)=>{
-        const data = await Post.findByPk(id).then(d=>{return d.toJSON()});
-        return data;
+        const data = await Post.findByPk(id);
+        if(data){
+            return data.dataValues;
+        }else{
+            return false;
+        }
+        
     }
-    findAll = async()=>{
-        const datas = await Post.findAll();
-        return datas;
-    }
-    findByNickname = async (nickname) => {
-        const datas = await Post.findOne({where:{nickname}}).then(d=>{return d.toJSON()});
+    findAll = async(where)=>{
+        let datas;
+        if(where){
+            datas = await Post.findAll({where:{userId:where},order:[['createdAt','DESC']]});
+        }else{
+            datas = await Post.findAll({order:[['createdAt','DESC']]});
+        }
+        
         return datas;
     }
     update = async (payload,id) => {
@@ -26,3 +33,5 @@ class PostRepository{
         return deleted;
     }
 }
+
+module.exports=PostRepository;

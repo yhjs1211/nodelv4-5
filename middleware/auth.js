@@ -4,12 +4,12 @@ const config = require('../config.js');
 
 const auth = {};
     
-auth.getAccessToken = async (userId) => {
-    const token = 'Bearer ' + jwt.sign({userId},config.jwt.secretAccess,{expiresIn:config.jwt.expiresInAccess});
+auth.getAccessToken = async (userId,nickname) => {
+    const token = 'Bearer ' + jwt.sign({userId,nickname},config.jwt.secretAccess,{expiresIn:config.jwt.expiresInAccess});
     return token;
 };
-auth.getRefreshToken = async (userId) => {
-        const token = 'Bearer ' + jwt.sign({userId},config.jwt.secretRefresh,{expiresIn:config.jwt.expiresInRefresh});
+auth.getRefreshToken = async (userId,nickname) => {
+        const token = 'Bearer ' + jwt.sign({userId,nickname},config.jwt.secretRefresh,{expiresIn:config.jwt.expiresInRefresh});
         return token;
 };
 auth.verify = async (req, res, next) => {
@@ -28,16 +28,8 @@ auth.verify = async (req, res, next) => {
             });
 
             if(payloadAccessToken){
-                const userId = payloadAccessToken.userId;
-                const user = await User.findByPk(userId);
-                if(user){
-                    res.locals.foundUser = user.dataValues;
-                    next();
-                }else{
-                    res.status(404).json({
-                        message:"회원이 존재하지 않습니다."
-                    });
-                }
+                res.locals.payload = payloadAccessToken;
+                next();
             }else{
                 token = refreshToken.split(' ')[1];
 
@@ -48,14 +40,15 @@ auth.verify = async (req, res, next) => {
                         return decoded;
                     }
                 });
+                
                 if(payloadRefreshToken){
                     const userId = payloadRefreshToken.userId;
                     const user = await User.findByPk(userId);
                     if(user && user.dataValues.token==refreshToken){
-                        const newAccessToken = await auth.getAccessToken(user.dataValues.id);
-                        
+                        const newAccessToken = await auth.getAccessToken(userId,payloadRefreshToken.nickname);
+
                         res.cookie('accessToken',newAccessToken);
-                        res.locals.foundUser = user;
+                        res.locals.payload = payloadRefreshToken;
                         next();
                     }else{
                         if(!user){

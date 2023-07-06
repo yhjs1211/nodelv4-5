@@ -8,12 +8,12 @@ class PostController{
     createPost = async (req, res) => {
         const created = await this.postService.createPost(
             req.body,
-            res.locals.foundUser
+            res.locals.payload
             );
-
+            
         if(created){
             res.status(201).json({
-                created,
+                created:created.dataValues,
                 message:"게시글이 생성되었습니다."
             });
         }else{
@@ -49,10 +49,10 @@ class PostController{
             });
         }
     };
-    getPost = async (req, res, next) => {
+    getPost = async (req, res) => {
         const postId = req.params.postId;
         const post = await this.postService.getPostDetail(postId);
-
+        
         if(post){
             res.status(200).json({
                 post,
@@ -64,11 +64,24 @@ class PostController{
             });
         };   
     };
-    updatePost = async (req, res, next) => {
+    updatePost = async (req, res) => {
+        const {userId, nickname} = res.locals.payload;
+        this.postService
+    };
+    deletePost = async (req, res) => {
         
     };
-    deletePost = async (req, res, next) => {
-        
+    likePost = async (req, res) => {
+        const postId = req.params.postId;
+        const payload = res.locals.payload;
+        const result = await this.postService.likePost(postId,payload);
+        if(result.isSuccessful){
+            res.status(200).json({ message: result.message});
+        }else{
+            res.status(400).json({
+                message: result.message
+            });
+        }
     };
 }
 

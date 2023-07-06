@@ -31,7 +31,5 @@ const User = mysql.define('user',{
     }
 });
 
-User.hasMany(Post);
-User.hasMany(Comment);
 
 module.exports=User;

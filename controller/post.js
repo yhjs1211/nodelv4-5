@@ -89,6 +89,12 @@ class PostController{
             });
         }
     };
+    getPostsByLike = async (req, res) => {
+        const payload = res.locals.payload;
+        const posts = await this.postService.getPostsByLike(payload);
+        console.log(posts);
+        res.end();
+    }
     likePost = async (req, res) => {
         const postId = req.params.postId;
         const payload = res.locals.payload;

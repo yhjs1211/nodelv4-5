@@ -1,5 +1,6 @@
 const Post = require('../database/models/post.js');
 const User = require('../database/models/user.js');
+const Like = require('../database/models/like.js');
 
 class PostRepository{
     create = async(data)=>{
@@ -94,6 +95,10 @@ class PostRepository{
         } catch (e) {
             return { isSuccessful : false , message:"좋아요 실패!"};
         }
+    }
+    findAllByLike = async (userId) => {
+        const postsByUserId = await Post.findAll({where:{userId}});
+        
     }
 }
 

@@ -21,6 +21,13 @@ const Post = mysql.define('post',{
     content:{
         type:DataTypes.TEXT
     },
+    like:{
+        type:DataTypes.VIRTUAL,
+        get(){
+            const length = this.LikeUser.length;
+            return length;
+        }
+    }
 });
 
 

@@ -27,6 +27,10 @@ class PostService{
         const userId = payload.userId;
         return await this.repository.like(postId,userId);
     }
+    getPostsByLike = async (payload) => {
+        const userId = payload.userId;
+        return await this.repository.findAllByLike(userId);
+    }
 }
 
 module.exports=PostService;

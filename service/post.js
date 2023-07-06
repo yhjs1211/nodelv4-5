@@ -17,8 +17,11 @@ class PostService{
     getPostDetail = async (postId) => {
         return await this.repository.findById(postId);
     }
-    updatePost = async (datas,postId) =>{
-        return await this.repository.update(datas,postId);
+    updatePost = async (datas,payload,postId) =>{
+        return await this.repository.update( datas, payload, postId );
+    }
+    deletePost = async (payload,postId) =>{
+        return await this.repository.delete( payload, postId );
     }
     likePost = async (postId,payload) => {
         const userId = payload.userId;

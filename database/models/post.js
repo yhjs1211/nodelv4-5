@@ -21,9 +21,6 @@ const Post = mysql.define('post',{
     content:{
         type:DataTypes.TEXT
     },
-    likewho:{
-        type:DataTypes.TEXT({length:"long"})
-    },
 });
 
 

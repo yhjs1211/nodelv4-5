@@ -38,8 +38,8 @@ class UserController{
         res.redirect('/');
     }
     update = async (req, res, next) =>{
-        const user = res.locals.foundUser;
-        const result = await this.userService.updateUser(req.body,user);
+        const payload = res.locals.payload;
+        const result = await this.userService.updateUser(req.body,payload);
 
         if(result){
             res.status(200).json({

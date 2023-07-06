@@ -11,8 +11,8 @@ class UserService{
         const user = await this.repository.findByNickname(nickname);
 
         if(user && user.password == password){
-            const accessToken = await auth.getAccessToken(user.id);
-            const refreshToken = await auth.getRefreshToken(user.id);
+            const accessToken = await auth.getAccessToken(user.id,user.nickname);
+            const refreshToken = await auth.getRefreshToken(user.id,user.nickname);
 
             await user.update({token:refreshToken});
 
@@ -48,26 +48,26 @@ class UserService{
             return {result:false};
         }
     }
-    updateUser = async (datas,user) => {
+    updateUser = async (datas,payload) => {
         const { nickname,password } = datas;
 
-        let payload;
+        let updateData;
         if(!nickname && !password){
             res.status(400).json({
                 message:"업데이트 할 내용을 적어주세요."
             });
         }else if(!nickname && password){
-            payload = {password};
+            updateData = {password};
         }else if(nickname && !password){
-            payload = {nickname};
+            updateData = {nickname};
         }else{
-            payload = {
+            updateData = {
                 nickname,
                 password
             };
         };
 
-        return await this.repository.update(payload,user.id);
+        return await this.repository.update(updateData,payload.userId);
     }
     deleteUser = async (req, res, next) => {
         const id = res.locals.user.id;

@@ -65,11 +65,29 @@ class PostController{
         };   
     };
     updatePost = async (req, res) => {
-        const {userId, nickname} = res.locals.payload;
-        this.postService
+        const payload = res.locals.payload;
+        const result = await this.postService.updatePost( req.body, payload, req.params.postId );
+        
+        if(result.isSuccessful){
+            res.status(200).json(result.updated);
+        }else{
+            res.status(400).json({
+                message:result.message
+            });
+        }
     };
     deletePost = async (req, res) => {
-        
+        const payload = res.locals.payload;
+        const result = await this.postService.deletePost(payload, req.params.postId);
+        if(result.isSuccessful){
+            res.status(200).json({
+                message:"게시글이 삭제되었습니다."
+            });
+        }else{
+            res.status(400).json({
+                message:result.message
+            });
+        }
     };
     likePost = async (req, res) => {
         const postId = req.params.postId;

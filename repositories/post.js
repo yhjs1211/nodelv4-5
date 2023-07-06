@@ -55,13 +55,31 @@ class PostRepository{
 
         return datas;
     }
-    update = async (datas,id) => {
-        const updated = await Post.update(datas,{where:{id}});
-        return updated;
+    update = async (datas, payload, postId) => {
+        const post = await Post.findByPk(postId);
+        const userId = payload.userId;
+        if(post.userId==userId){
+            const updated = await post.update(datas);
+            return { updated, isSuccessful : true };
+        }else{
+            return {
+                message:"수정 권한이 없습니다.",
+                isSuccessful : false
+            };
+        }
     }
-    delete = async (id) =>{
-        const deleted = await Post.destroy({where:id});
-        return deleted;
+    delete = async (payload, postId) =>{
+        const post = await Post.findByPk(postId);
+        const userId = payload.userId;
+        if(post.userId==userId){
+            await post.destroy();
+            return { isSuccessful : true };
+        }else{
+            return {
+                message:"삭제 권한이 없습니다.",
+                isSuccessful : false
+            };
+        }
     }
     like = async (postId,userId) => {
         const post = await Post.findByPk(postId);

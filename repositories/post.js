@@ -1,6 +1,7 @@
 const Post = require('../database/models/post.js');
 const User = require('../database/models/user.js');
 const Like = require('../database/models/like.js');
+const Op = require('sequelize').Op;
 
 class PostRepository{
     create = async(data)=>{
@@ -102,24 +103,28 @@ class PostRepository{
     }
     findAllByLike = async (userId) => {
         try {
-            const data = await Like.findAll({
-                where:{userId},
-                include:{
-                    model:Post,
-                    include:{
-                        model:User,
-                        as:'LikeUser',
-                        attributes:['name','nickname']
-                    },
-                    foreignKey:'id'
+            let postIds = await Like.findAll({
+                where:{userId}
+            });
+            postIds=postIds.map(v=>v.dataValues.postId);
+
+            const data = await Post.findAll({
+                where:{
+                    id:{
+                        [Op.in]:postIds
+                    }
                 },
-            });    
+                include:{
+                    model:User,
+                    as:'LikeUser',
+                    attributes:['id','nickname','name']
+                }
+            });
             return {data , isSuccessful : true};
         } catch (e) {
             console.error(e);
             return {message:"조회에 실패하였습니다." , isSuccessful : false};
         }
-        
     }
 }
 

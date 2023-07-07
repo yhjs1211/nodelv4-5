@@ -19,6 +19,8 @@ router.route('/')
 router.route('/:postId/like')
 .put(auth.verify,postController.likePost);
 
+router.get('/like',auth.verify,postController.getPostsByLike);
+
 router.route('/:postId')
 // GET /posts/:postId
 .get(postController.getPost)

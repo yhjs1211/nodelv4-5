@@ -1,5 +1,6 @@
 const Post = require('../database/models/post.js');
 const User = require('../database/models/user.js');
+const Like = require('../database/models/like.js');
 
 class PostRepository{
     create = async(data)=>{
@@ -9,20 +10,25 @@ class PostRepository{
     }
     findById = async(id)=>{
         
-        const data = await Post.findByPk(id,{attributes:['id','nickname','title','content','like','createdAt', 'updatedAt','userId']});
-
+        const data = await Post.findByPk(id,{
+            include:{
+                model:User,
+                as:'LikeUser',
+                attributes:['name','nickname']
+            }
+        });
+        
         if(data){
             return data;
         }else{
             return false;
-        }
-        
+        }        
     }
-    findAll = async(where)=>{
+    findAll = async(whereData)=>{
         let datas;
-        if(where){
+        if(whereData){
             datas = await Post.findAll({
-                where:{userId:where},
+                where:{userId:whereData},
                 include:[
                     {
                         model:User,
@@ -42,7 +48,7 @@ class PostRepository{
                 include:[
                     {
                         model:User,  // POST 작성자
-                        attributes:['name','nickname','token']
+                        attributes:['name','nickname']
                     },
                     {
                         model:User, // 좋아요 누른 유저
@@ -52,7 +58,6 @@ class PostRepository{
                 ]
             });
         }
-
         return datas;
     }
     update = async (datas, payload, postId) => {
@@ -94,6 +99,27 @@ class PostRepository{
         } catch (e) {
             return { isSuccessful : false , message:"좋아요 실패!"};
         }
+    }
+    findAllByLike = async (userId) => {
+        try {
+            const data = await Like.findAll({
+                where:{userId},
+                include:{
+                    model:Post,
+                    include:{
+                        model:User,
+                        as:'LikeUser',
+                        attributes:['name','nickname']
+                    },
+                    foreignKey:'id'
+                },
+            });    
+            return {data , isSuccessful : true};
+        } catch (e) {
+            console.error(e);
+            return {message:"조회에 실패하였습니다." , isSuccessful : false};
+        }
+        
     }
 }
 

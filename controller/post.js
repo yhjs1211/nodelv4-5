@@ -89,10 +89,23 @@ class PostController{
             });
         }
     };
+    getPostsByLike = async (req, res) => {
+        const payload = res.locals.payload;
+        const posts = await this.postService.getPostsByLike(payload);
+        
+        if(posts.isSuccessful){
+            res.status(200).json({ data:posts.data});
+        }else{
+            res.status(400).json({
+                message: posts.message
+            });
+        }
+    }
     likePost = async (req, res) => {
         const postId = req.params.postId;
         const payload = res.locals.payload;
         const result = await this.postService.likePost(postId,payload);
+
         if(result.isSuccessful){
             res.status(200).json({ message: result.message});
         }else{
